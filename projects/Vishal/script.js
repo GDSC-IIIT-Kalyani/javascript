@@ -1,9 +1,100 @@
+
 const canvas = document.getElementById('canvasbg');
 const ctx = canvas.getContext('2d');
+
 const canvas_width = canvas.width = 800;
 const canvas_height = canvas.height = 690;
 let gameSpeed = 0;
+const gravity =0.2;
+//player 
 
+class Player{
+    constructor(){
+        this.position = {
+            x: 100,
+            y: 100
+        }
+        this.velocity ={
+            x: 0,
+            y: 1
+        }
+        this.frames = 
+            {
+                idle: 7,
+                jumpup: 7,
+                jumpdown: 7,
+                run: 9,
+                dizzy: 11,
+                sit: 5,
+                roll: 7,
+                bite: 7,
+                ko: 12,
+                gethit: 4
+            }
+        
+        this.width = 55
+        this.height = 50
+        this.image = new Image();
+        this.image.src = './Assets/shadow_dog.png'
+        this.frameX = 0;
+        this.frameY = 0;
+        this.spirteWidth = 6876/12;
+        this.spriteHeight = 5230/10;
+        this.gameframe = 0;
+        this.staggeredframe = 5;
+        this.n = 6;
+        
+    }
+    drawPlayer (){
+        ctx.fillStyle = 'black'
+        ctx.drawImage(this.image,
+            this.spirteWidth*this.frameX,
+            this.spriteHeight*this.frameY ,
+            this.spirteWidth,
+            this.spriteHeight,
+            this.position.x, 
+            this.position.y, 
+            this.width, 
+            this.height)
+    }
+    updatePlayer(){
+        this.position.y += this.velocity.y
+        if (this.gameframe%this.staggeredframe ==0){
+            if (this.frameX <this.n /*to changed with a variable*/) this.frameX++;
+            else this.frameX = 0;
+        }
+        if (gameSpeed>0) {
+            if (this.velocity.y>0 || this.velocity.y<0){
+                if (this.velocity.y>0) {
+                    this.frameY = 2;
+                    this.n = 6
+                }
+                else {
+                    this.frameY =1;
+                    this.n = 6
+                }
+            }
+            else if (this.velocity.y == 0) {
+                this.frameY = 3
+                this.n = 8
+            }
+        }
+        else if (gameSpeed ==0){
+            this.frameY = 0
+            this.n = 6
+        }
+        this.drawPlayer()
+        //adding gravity in each loop 
+        if (this.position.y +this.height +this.velocity.y <= canvas.height -50)
+            this.velocity.y += gravity
+        else 
+            this.velocity.y =0
+        this.gameframe++
+    }
+    
+}
+const player =  new Player()
+//doggo - run
 const bgLayer1 = new Image();
 bgLayer1.src = './Assets/layers/L-1.png';
 const bgLayer2 = new Image();
@@ -27,6 +118,7 @@ bgLayer10.src = './Assets/layers/L-10.png';
 const bgLayer11 = new Image();
 bgLayer11.src = './Assets/layers/L-11.png';
 
+//layer class
 class Layer {
     constructor(image, speedModifier){
         this.x = 0;
@@ -48,6 +140,7 @@ class Layer {
             this.x2 = this.width + this.x - this.speed;
         }
         this.x2 = Math.floor(this.x2 - this.speed);
+        
     }
     draw(){
         ctx.drawImage(this.image, this.x, this.y, this.width, this.height );
@@ -74,6 +167,41 @@ function animate(){
         object.update();
         object.draw();
     });
+    //console.log(player.position.y)
+    //console.log(player.staggeredframe);
+    //console.log(gameSpeed);
+    player.updatePlayer()
     requestAnimationFrame(animate);
 }
 animate();
+
+//key controls
+window.addEventListener('keydown', ({keyCode}) =>{
+    console.log(keyCode)//<- getting kry code of input key
+    switch (keyCode){
+        
+        case 87: //w
+            if (player.position.y <588) break;
+            player.velocity.y -=7
+            break;
+        case 83: //s
+            if(player.position.y +player.height +player.velocity.y <= canvas.height -50)
+                player.velocity.y +=7;
+            break;
+        case 65: //a
+            if (player.staggeredframe<6 && player.staggeredframe>=3)player.staggeredframe++;
+            if (gameSpeed >4) 
+
+                gameSpeed -=4;
+            else if (gameSpeed<=4)
+                gameSpeed = 0;
+            break;
+        case 68: //d
+            if (player.staggeredframe<=6 && player.staggeredframe>3)player.staggeredframe--;
+            if (gameSpeed >15) break;
+            
+            gameSpeed +=2
+            break;
+        case 32: //space      
+    }
+})

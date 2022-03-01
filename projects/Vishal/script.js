@@ -1,4 +1,5 @@
 
+
 const canvas = document.getElementById('canvasbg');
 const ctx = canvas.getContext('2d');
 
@@ -6,6 +7,12 @@ const canvas_width = canvas.width = 800;
 const canvas_height = canvas.height = 690;
 let gameSpeed = 0;
 const gravity =0.2;
+const numberofenemies = 1;
+//const enemiesArray = [];
+let  enemies = []
+//cage
+const cageImage = new Image();
+cageImage.src = './Assets/cage.png'
 //player 
 
 class Player{
@@ -18,8 +25,7 @@ class Player{
             x: 0,
             y: 1
         }
-        this.frames = 
-            {
+        this.frames = {
                 idle: 7,
                 jumpup: 7,
                 jumpdown: 7,
@@ -94,6 +100,29 @@ class Player{
     
 }
 const player =  new Player()
+
+//enemydw
+class Enemy{
+    constructor (gameWidth, gameHeight){
+        this.gameWidth = gameWidth;
+        this.gameHeight = gameHeight;
+        this.width= 250/3;
+        this.height = 231/3
+        this.x =this.gameWidth;
+        this.y = this.gameHeight - this.height-50;
+        this.frameX = 0
+    }
+    draw(){
+        //ctx.fillRect(this.x, this.y,this.width, this.height )
+        ctx.drawImage(cageImage, this.x, this.y,this.width, this.height )
+    }
+    update(){
+        this.x = this.x - gameSpeed;
+    }
+};
+
+
+
 //doggo - run
 const bgLayer1 = new Image();
 bgLayer1.src = './Assets/layers/L-1.png';
@@ -117,6 +146,8 @@ const bgLayer10 = new Image();
 bgLayer10.src = './Assets/layers/L-10.png';
 const bgLayer11 = new Image();
 bgLayer11.src = './Assets/layers/L-11.png';
+
+
 
 //layer class
 class Layer {
@@ -160,20 +191,53 @@ const layer10 = new Layer(bgLayer10 , 1);
 const layer11 = new Layer(bgLayer11 , 1);
 
 const bglayers = [layer1, layer2, layer3, layer4, layer5, layer6, layer7, layer8, layer9, layer10, layer11]
+//handle enemies
+enemies.push(new Enemy (canvas_width,canvas_height))
+function handleEnemies(deltaTime){
+    if (enemyTimer > enemyInterval + randomEnemyInterval){
+        enemies.push(new Enemy (canvas_width,canvas_height));
+        randomEnemyInterval = Math.random()* 1000 + 500;
+        enemyTimer= 0;
+    } else {
+        enemyTimer += deltaTime;
+    }
+    enemies.forEach(enemy => {
+        enemy.draw();
+        enemy.update();
+    })
+}
+//const enemy1 = new Enemy();
+/*for (let i = 0; i<numberofenemies; i++){
+    enemiesArray.push(new Enemy());
+}*/
+//console.log(enemiesArray)
 
-function animate(){
+let lastTime =0;
+let enemyTimer = 0;
+let enemyInterval =2000;
+let randomEnemyInterval = Math.random()* 1000 + 500;
+
+function animate(timeStamp){
+    const deltaTime = timeStamp - lastTime;
+    lastTime = timeStamp
     ctx.clearRect(0,0,canvas_width, canvas_height);
     bglayers.forEach(object =>{
         object.update();
         object.draw();
     });
+    
     //console.log(player.position.y)
     //console.log(player.staggeredframe);
     //console.log(gameSpeed);
-    player.updatePlayer()
+    player.updatePlayer();
+    handleEnemies(deltaTime);
+    /*enemiesArray.forEach(enemy =>{
+        enemy.draw();
+        enemy.update();
+    })*/
     requestAnimationFrame(animate);
 }
-animate();
+animate(0);
 
 //key controls
 window.addEventListener('keydown', ({keyCode}) =>{

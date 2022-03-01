@@ -1,5 +1,3 @@
-
-
 const canvas = document.getElementById('canvasbg');
 const ctx = canvas.getContext('2d');
 
